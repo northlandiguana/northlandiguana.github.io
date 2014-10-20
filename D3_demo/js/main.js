@@ -22,10 +22,10 @@ function initialize(){
 			.attr("width", w) //assign the width
 			.attr("height", h) //assign the height
 			.attr("class", "container") //always assign a class (as the block name) for styling and future selection
-			.style("background-color", "rgba(0,0,0,0.2)")
+			.style("background-color", "rgba(0,0,0,0.2)"); //only put a semicolon at the end of the block!
 	};
 
-	function 
+	//function 
 
 };
 
