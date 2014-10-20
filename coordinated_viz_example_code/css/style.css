@@ -1,0 +1,102 @@
+@charset "utf-8";
+/* CSS Document */
+
+body {
+	height: 100%;
+	margin: 20px;
+	font-family: "Proxima Nova Rg", Arial, Helvetica, sans-serif;
+	/* text unselectable */
+	-webkit-user-select: none; /* Chrome/Safari */        
+	-moz-user-select: none; /* Firefox */
+	-ms-user-select: none; /* IE10+ */
+}
+
+svg {
+	position: absolute;
+}
+
+h3 {
+	display: inline;
+	margin-right: 10px;
+}
+
+.gratBackground {
+  fill: #D5E3FF;
+}
+
+.gratLines {
+  fill: none;
+  stroke: #999;
+  stroke-width: 1px;
+}
+
+.map {
+	border: medium solid #999;
+}
+
+.countries {
+  fill: #fff;
+  stroke: #ccc;
+  stroke-width: 2px;
+}
+
+.provinces {
+  fill: none;
+  stroke: #000;
+  stroke-width: 0.5px;
+  stroke-linecap: round;
+}
+
+.dropdown {
+	margin-left: 598px;
+	margin-top: 40px;
+	margin-bottom: -20px;
+}
+
+.dropdown select {
+	font-size: 1em;
+	border: 1px solid black;
+	width: 135px;
+}
+
+.infolabel {
+	position: absolute;
+	width: 200px;
+	height: 50px;
+	color: #fff;
+	background-color: #000;
+	border: solid thin #fff;
+	padding: 5px;
+}
+
+.infolabel h1 {
+	margin: 0px;
+	padding: 0px;
+	display: inline-block;
+	line-height: 1em;
+}
+
+.infolabel b {
+	float: left;
+}
+
+.labelname {
+	display: inline-block;
+	float: right;
+	margin: -25px 0px 0px 40px;
+	font-size: 1em;
+	font-weight: bold;
+	position: absolute;
+}
+
+.chart {
+	background-color: rgba(128,128,128,.2);
+	border: medium solid #999;
+	margin-left: 600px;
+	margin-top: 56px;
+}
+
+.charttext {
+	font-size: 1.5em;
+	font-weight: bold;
+}
