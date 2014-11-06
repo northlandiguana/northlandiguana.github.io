@@ -1,15 +1,13 @@
 /*********************************************************
-G575 D3 Lab Code v1.2
-Copyright (c) October 2014, Carl Sack and the University of Wisconsin-Madison Cartography Program
+Written for Cartographic Perspectives: On the Horizon
+Modified from an Interactive Cartography and Geovisualization laboratory exercise given in Spring, 2013
+Copyright (c) October 2013, Carl Sack and the University of Wisconsin-Madison Cartography Program
 MIT License
 **********************************************************/
 
 //global variables
 var keyArray = ["varA","varB","varC","varD","varE"];
 var expressed = keyArray[0];
-var colorize;
-var mapWidth = 550, mapHeight = 530; //map frame dimensions
-var chartWidth = 550, chartHeight = 450; //chart frame dimensions
 
 window.onload = initialize(); //start script once HTML is loaded
 
@@ -18,8 +16,11 @@ function initialize(){ //the first function called once the html is loaded
 };
 
 function setMap(){ //set choropleth map parameters	
-
-	//create a title for the page
+	//map frame dimensions
+	var width = 960;
+	var height = 460;
+	
+	//optional--create a title for the page
 	var title = d3.select("body")
 		.append("h1")
 		.text("France Provinces Choropleth");
@@ -27,8 +28,8 @@ function setMap(){ //set choropleth map parameters
 	//create a new svg element with the above dimensions
 	var map = d3.select("body")
 		.append("svg")
-		.attr("width", mapWidth)
-		.attr("height", mapHeight)
+		.attr("width", width)
+		.attr("height", height)
 		.attr("class", "map");
 	
 	//create Europe albers equal area conic projection, centered on France
@@ -36,8 +37,8 @@ function setMap(){ //set choropleth map parameters
 		.center([-8, 46.2])
 		.rotate([-10, 0])
 		.parallels([43, 62])
-		.scale(2900)
-		.translate([mapWidth / 2, mapHeight / 2]);
+		.scale(2500)
+		.translate([width / 2, height / 2]);
 	
 	//create svg path generator using the projection
 	var path = d3.geo.path()
@@ -66,7 +67,7 @@ function setMap(){ //set choropleth map parameters
 		.await(callback);
 
 	function callback(error, csvData, europe){
-		colorize = colorScale(csvData); //retrieve color scale generator
+		var recolorMap = colorScale(csvData); //retrieve color scale generator
 
 		//variables for csv to json data transfer
 		var jsonProvs = europe.objects.FranceProvinces.geometries;
@@ -108,21 +109,20 @@ function setMap(){ //set choropleth map parameters
 			.append("g") //give each province its own g element
 			.attr("class", "provinces") //assign class for additional styling
 			.append("path")
-			.attr("class", function(d) { return d.properties.adm1_code })
+			.attr("id", function(d) { return d.properties.adm1_code })
 			.attr("d", path) //project data as geometry in svg
 			.style("fill", function(d) { //color enumeration units
-				return choropleth(d, colorize);
+				return choropleth(d, recolorMap);
 			})
 			.on("mouseover", highlight)
 			.on("mouseout", dehighlight)
 			.on("mousemove", moveLabel)
 			.append("desc") //append the current color
 				.text(function(d) {
-					return choropleth(d, colorize);
+					return choropleth(d, recolorMap);
 				});
-				
+
 		createDropdown(csvData); //create the dropdown menu
-		setChart(csvData, colorize); //create the bar chart
 	};
 };
 
@@ -147,39 +147,6 @@ function createDropdown(csvData){
 		});
 };
 
-function setChart(csvData, colorize){
-
-	//create a second svg element to hold the bar chart
-	var chart = d3.select("body")
-		.append("svg")
-		.attr("width", chartWidth)
-		.attr("height", chartHeight)
-		.attr("class", "chart");
-
-	//create a text element for the chart title
-	var title = chart.append("text")
-		.attr("x", 20)
-		.attr("y", 40)
-		.attr("class", "charttext");
-
-	//set bars for each province
-	var bars = chart.selectAll(".bar")
-		.data(csvData)
-		.enter()
-		.append("rect")
-		.sort(function(a, b){return a[expressed]-b[expressed]})
-		.attr("class", function(d){
-			return "bar " + d.adm1_code;
-		})
-		.attr("width", chartWidth / csvData.length - 1)
-		.on("mouseover", highlight)
-		.on("mouseout", dehighlight)
-		.on("mousemove", moveLabel);
-
-	//adjust bars according to current attribute
-	updateChart(bars, csvData.length);
-};
-
 function colorScale(csvData){
 
 	//create quantile classes with color scale		
@@ -192,29 +159,37 @@ function colorScale(csvData){
 			"#980043"
 		]);
 	
-	//set min and max data values as domain
-	color.domain([
-		d3.min(csvData, function(d) { return Number(d[expressed]); }),
-		d3.max(csvData, function(d) { return Number(d[expressed]); })
-	]);
+	//build array of all currently expressed values for input domain
+	var domainArray = [];
+	for (var i in csvData){
+		domainArray.push(Number(csvData[i][expressed]));
+	};
+	
+	//for equal-interval scale, use min and max expressed data values as domain
+	// color.domain([
+	// 	d3.min(csvData, function(d) { return Number(d[expressed]); }),
+	// 	d3.max(csvData, function(d) { return Number(d[expressed]); })
+	// ]);
+
+	//for quantile scale, pass array of expressed values as domain
+	color.domain(domainArray);
 	
 	return color; //return the color scale generator
 };
 
-function choropleth(d, colorize){
+function choropleth(d, recolorMap){
 	
 	//get data value
-	var value = d.properties ? d.properties[expressed] : d[expressed];
+	var value = d.properties[expressed];
 	//if value exists, assign it a color; otherwise assign gray
 	if (value) {
-		return colorize(value); //colorize holds the colorScale generator
+		return recolorMap(value); //recolorMap holds the colorScale generator
 	} else {
 		return "#ccc";
 	};
 };
 
 function changeAttribute(attribute, csvData){
-
 	//change the expressed attribute
 	expressed = attribute;
 	
@@ -222,50 +197,13 @@ function changeAttribute(attribute, csvData){
 	d3.selectAll(".provinces") //select every province
 		.select("path")
 		.style("fill", function(d) { //color enumeration units
-			return choropleth(d, colorize); //->
+			return choropleth(d, colorScale(csvData)); //->
 		})
 		.select("desc") //replace the color text in each province's desc element
 			.text(function(d) {
-				return choropleth(d, colorize); //->
+				return choropleth(d, colorScale(csvData)); //->
 			});
-
-	//re-sort the bar chart
-	var bars = d3.selectAll(".bar")
-		.sort(function(a, b){
-			return a[expressed]-b[expressed];
-		})
-		.transition() //this adds the super cool animation
-		.delay(function(d, i){
-			return i * 10 
-		});
-
-	//update bars according to current attribute
-	updateChart(bars, csvData.length);
 };
-
-function updateChart(bars, numbars){
-	//style the bars according to currently expressed attribute
-	bars.attr("height", function(d, i){
-			return Number(d[expressed])*3;
-		})
-		.attr("y", function(d, i){
-			return chartHeight - Number(d[expressed])*3;
-		})
-		.attr("x", function(d, i){
-			return i * (chartWidth / numbars);
-		})
-		.style("fill", function(d){
-			return choropleth(d, colorize);
-		});
-
-	//update chart title
-	d3.select(".charttext")
-		.text("Number of "+ 
-			expressed[0].toUpperCase() + 
-			expressed.substring(1,3) + " " + 
-			expressed.substring(3) +
-			" In Each Province");
-}
 
 function format(value){
 	
@@ -294,11 +232,10 @@ function roundRight(number){
 };
 
 function highlight(data){
+	
+	var props = data.properties; //json properties
 
-	//json or csv properties
-	var props = data.properties ? data.properties : data;
-
-	d3.selectAll("."+props.adm1_code) //select the current province in the DOM
+	d3.select("#"+props.adm1_code) //select the current province in the DOM
 		.style("fill", "#000"); //set the enumeration unit fill to black
 
 	var labelAttribute = "<h1>"+props[expressed]+
@@ -318,9 +255,8 @@ function highlight(data){
 
 function dehighlight(data){
 	
-	//json or csv properties
-	var props = data.properties ? data.properties : data;
-	var prov = d3.selectAll("."+props.adm1_code); //designate selector variable for brevity
+	var props = data.properties; //json properties
+	var prov = d3.select("#"+props.adm1_code); //select the current province
 	var fillcolor = prov.select("desc").text(); //access original color from desc
 	prov.style("fill", fillcolor); //reset enumeration unit to orginal color
 	
@@ -328,17 +264,9 @@ function dehighlight(data){
 };
 
 function moveLabel() {
-
-	if (d3.event.clientX < window.innerWidth - 245){
-		var x = d3.event.clientX+10; //horizontal label coordinate based mouse position stored in d3.event
-	} else {
-		var x = d3.event.clientX-210; //horizontal label coordinate based mouse position stored in d3.event
-	};
-	if (d3.event.clientY < window.innerHeight - 100){
-		var y = d3.event.clientY-75; //vertical label coordinate
-	} else {
-		var y = d3.event.clientY-175; //vertical label coordinate
-	};
+	
+	var x = d3.event.clientX+10; //horizontal label coordinate based mouse position stored in d3.event
+	var y = d3.event.clientY-75; //vertical label coordinate
 	d3.select(".infolabel") //select the label div for moving
 		.style("margin-left", x+"px") //reposition label horizontal
 		.style("margin-top", y+"px"); //reposition label vertical

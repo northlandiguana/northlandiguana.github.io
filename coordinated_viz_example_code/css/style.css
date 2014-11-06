@@ -2,8 +2,9 @@
 /* CSS Document */
 
 body {
+	width: 100%;
 	height: 100%;
-	margin: 20px;
+	margin: 20px 20px;
 	font-family: "Proxima Nova Rg", Arial, Helvetica, sans-serif;
 	/* text unselectable */
 	-webkit-user-select: none; /* Chrome/Safari */        
@@ -13,11 +14,6 @@ body {
 
 svg {
 	position: absolute;
-}
-
-h3 {
-	display: inline;
-	margin-right: 10px;
 }
 
 .gratBackground {
@@ -48,15 +44,7 @@ h3 {
 }
 
 .dropdown {
-	margin-left: 598px;
-	margin-top: 40px;
-	margin-bottom: -20px;
-}
-
-.dropdown select {
-	font-size: 1em;
-	border: 1px solid black;
-	width: 135px;
+	margin-left: 980px;
 }
 
 .infolabel {
@@ -87,16 +75,4 @@ h3 {
 	font-size: 1em;
 	font-weight: bold;
 	position: absolute;
-}
-
-.chart {
-	background-color: rgba(128,128,128,.2);
-	border: medium solid #999;
-	margin-left: 600px;
-	margin-top: 56px;
-}
-
-.charttext {
-	font-size: 1.5em;
-	font-weight: bold;
 }
